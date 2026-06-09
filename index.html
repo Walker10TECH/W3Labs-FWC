@@ -1,0 +1,2299 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ResenIA - Copa do Mundo 2026</title>
+    <!-- Corrige o erro 404 do Favicon adicionando um emoji de bola de futebol -->
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚽</text></svg>">
+    <!-- API OFICIAL DO YOUTUBE -->
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <!-- MARKDOWN PARSER -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        /* ==========================================================================
+           FONTES DA COPA DO MUNDO 2026 E GOOGLE (GEMINI)
+           ========================================================================== */
+        @import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap');
+
+        @font-face {
+            font-family: 'FWC2026-Condensed';
+            src: url('./fonts/FWC2026-CondensedLight.ttf') format('truetype');
+            font-weight: 200;
+            font-display: swap;
+        }
+
+        @font-face {
+            font-family: 'FWC2026-Expanded';
+            src: url('./fonts/FWC2026-ExpandedBlack.ttf') format('truetype');
+            font-weight: 200;
+            font-display: swap;
+        }
+
+        /* ==========================================================================
+           ESTILOS GERAIS DA INTERFACE (TEMA GEMINI / W3LABS)
+           ========================================================================== */
+        :root {
+            --bg-dark: #131314;
+            --bg-panel: rgba(30, 31, 34, 0.75);
+            --primary: #8b5cf6;
+            --secondary: #10b981;
+            --text-main: #e3e3e3;
+            --espn-red: #dd0000;
+            --bg-image: url('https://media.istockphoto.com/id/2262011407/vector/colorful-design-for-sports-event-of-2026-year.jpg?s=612x612&w=0&k=20&c=WYkPNJVkXIJPEz7uWuni8td3Y4rWf1LIMvm-cFM8_uY=');
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Google Sans', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        /* BLOQUEIO DE SCROLL GLOBAL PARA TELA FIXA (PC E MOBILE) E BACKGROUND GRADIENTE */
+        html,
+        body {
+            width: 100%;
+            height: 100dvh;
+            /* dvh resolve o problema do teclado virtual cobrindo o input no celular */
+            overflow: hidden;
+            overscroll-behavior: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: #000;
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            z-index: 0;
+        }
+
+        /* Camada da imagem de fundo com blur preto */
+        body::before {
+            content: '';
+            position: absolute;
+            /* Margem negativa evita que as bordas percam o blur e mostrem as pontas rígidas da tela */
+            top: -20px;
+            left: -20px;
+            right: -20px;
+            bottom: -20px;
+            background-image: var(--bg-image);
+            background-size: cover;
+            background-position: center;
+            filter: blur(15px) brightness(0.25);
+            /* Desfoque (blur) + Escurecimento (Preto) */
+            z-index: -1;
+        }
+
+        /* HEADER - Ajustado para ser transparente e não quebrar o visual de imersão */
+        header {
+            background: transparent;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            position: relative;
+            /* Necessário para manter o header sempre acessível sobre o feed lateral */
+        }
+
+        .logo-resenia {
+            font-family: 'FWC2026-Expanded', 'Arial Black', sans-serif;
+            font-size: 20px;
+            background: -webkit-linear-gradient(#fff, #d4b561);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        #toggle-feed-btn,
+        #calendar-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #c4c7c5;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        #toggle-feed-btn:hover,
+        #calendar-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        .live-badge {
+            background-color: rgba(221, 0, 0, 0.2);
+            color: #ff4d4d;
+            border: 1px solid rgba(221, 0, 0, 0.4);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+            animation: pulse 2s infinite;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .live-badge::before {
+            content: '';
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            background-color: #ff4d4d;
+            border-radius: 50%;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        /* LAYOUT PRINCIPAL */
+        .content-split {
+            display: flex;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+            justify-content: center;
+            background: transparent;
+        }
+
+        /* ==========================================================================
+           CHAT DA IA NOVO ESTILO GEMINI
+           ========================================================================== */
+        .chat-section {
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            flex-direction: column;
+            background: transparent;
+            position: relative;
+            margin: 0 auto;
+            /* Centraliza o chat e empurra o feed totalmente para a direita */
+        }
+
+        .initial-greeting {
+            position: absolute;
+            top: 35%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2.2rem;
+            color: #e3e3e3;
+            text-align: center;
+            font-weight: 400;
+            width: 100%;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 30px 20px 130px 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            background: transparent;
+            scroll-behavior: smooth;
+        }
+
+        .message {
+            max-width: 100%;
+            font-size: 15px;
+            line-height: 1.6;
+            animation: fadeIn 0.3s ease-out;
+            display: flex;
+            flex-direction: column;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .msg-ai {
+            background-color: transparent;
+            color: var(--text-main);
+            align-self: flex-start;
+        }
+
+        .msg-ai strong {
+            color: #d4b561;
+            font-family: 'Google Sans', sans-serif;
+            font-size: 16px;
+            margin-bottom: 5px;
+            display: inline-block;
+        }
+
+        /* ==========================================================================
+           ESTILOS PARA MARKDOWN (Tabelas, Listas, Títulos, Citações)
+           ========================================================================== */
+        .msg-ai h1,
+        .msg-ai h2,
+        .msg-ai h3,
+        .msg-ai h4,
+        .msg-ai h5,
+        .msg-ai h6 {
+            background: rgba(255, 255, 255, 0.05);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-weight: normal;
+            padding: 4px 8px;
+            margin: 12px 0 8px 0;
+            color: #d4b561;
+        }
+
+        .msg-ai p {
+            margin-bottom: 10px;
+        }
+
+        .msg-ai blockquote {
+            background: rgba(16, 185, 129, 0.1);
+            border-left: 3px solid var(--secondary);
+            font-style: italic;
+            padding: 8px 12px;
+            margin: 8px 0 8px 2px;
+        }
+
+        .msg-ai pre {
+            background: rgba(0, 0, 0, 0.5);
+            border-left: 3px solid var(--primary);
+            padding: 10px;
+            margin-left: 2px;
+            overflow-x: auto;
+        }
+
+        .msg-ai code {
+            background: rgba(0, 0, 0, 0.5);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9em;
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
+
+        .msg-ai table {
+            border-spacing: 0px;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        .msg-ai th,
+        .msg-ai td {
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 8px;
+        }
+
+        .msg-ai th {
+            background: rgba(255, 255, 255, 0.05);
+            font-weight: 600;
+            color: #d4b561;
+        }
+
+        .msg-ai ul {
+            margin-left: 20px;
+            margin-bottom: 10px;
+        }
+
+        .msg-ai ol {
+            margin-left: 25px;
+            margin-bottom: 10px;
+        }
+
+        .msg-user {
+            background-color: #1e1f20;
+            color: #e3e3e3;
+            align-self: flex-end;
+            padding: 15px 25px;
+            border-radius: 25px;
+            max-width: 80%;
+        }
+
+        /* BARRA DE INPUT IGUAL A IMAGEM */
+        .chat-input-container {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 780px;
+            padding: 0 20px;
+            z-index: 100;
+        }
+
+        .chat-input-area {
+            background: #1e1f20;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 30px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .chat-input-area:focus-within {
+            background: #252628;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+        }
+
+        .chat-input-area input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #e3e3e3;
+            font-size: 15px;
+            outline: none;
+            padding: 5px;
+        }
+
+        .chat-input-area input::placeholder {
+            color: #a8a8a8;
+        }
+
+        .icon-btn {
+            background: transparent;
+            color: #c4c7c5;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4px;
+            border-radius: 50%;
+            transition: 0.2s;
+        }
+
+        .icon-btn:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .pro-badge {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            color: #c4c7c5;
+            font-size: 13px;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 12px;
+        }
+
+        .pro-badge:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+        }
+
+        /* FEED DA API LATERAL */
+        .live-feed-section {
+            flex: 1;
+            background: rgba(19, 19, 20, 0.4);
+            backdrop-filter: blur(12px);
+            display: flex;
+            flex-direction: column;
+            min-width: 320px;
+            max-width: 380px;
+            border-left: 1px solid rgba(255, 255, 255, 0.05);
+            z-index: 40;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .feed-header {
+            padding: 18px 24px;
+            background: transparent;
+            font-family: 'FWC2026-Expanded', sans-serif;
+            font-size: 13px;
+            color: #d4b561;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .api-status {
+            font-size: 10px;
+            font-weight: bold;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            padding: 4px 8px;
+            border-radius: 12px;
+            color: var(--secondary);
+            letter-spacing: 0.5px;
+        }
+
+        .feed-content {
+            padding: 20px;
+            overflow-y: auto;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .feed-item {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            padding: 14px;
+            border-left: 3px solid var(--primary);
+            border-radius: 8px;
+            font-size: 13.5px;
+            animation: slideInLeft 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        .feed-item.real-api {
+            border-left-color: #d4b561;
+        }
+
+        .feed-time {
+            font-weight: bold;
+            color: #a8a8a8;
+            margin-right: 8px;
+            font-size: 12px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .typing-indicator {
+            display: inline-block;
+            width: 40px;
+        }
+
+        .typing-indicator span {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            background-color: var(--primary);
+            border-radius: 50%;
+            animation: typing 1.4s infinite both;
+            margin: 0 2px;
+        }
+
+        .typing-indicator span:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+
+            0%,
+            80%,
+            100% {
+                transform: scale(0);
+            }
+
+            40% {
+                transform: scale(1);
+            }
+        }
+
+        /* WIDGETS RESTANTES (MANTIDOS E ADAPTADOS AO FUNDO ESCURO) */
+        #placar-widget,
+        #groups-widget,
+        #lineups-widget,
+        #match-list-widget {
+            display: none;
+            width: 100%;
+            margin-top: 15px;
+            border-radius: 16px;
+        }
+
+        .placar-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            width: 100%;
+            font-family: 'FWC2026-Condensed', 'Arial Black', sans-serif;
+        }
+
+        .placar-main {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 10;
+            padding: 10px 0;
+        }
+
+        .barra-dourada {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            transform: translateY(-50%);
+            height: 48px;
+            background-image: var(--bg-image);
+            background-size: cover;
+            background-position: center;
+            border-radius: 8px;
+            z-index: 1;
+            box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.2), 0 3px 5px rgba(0, 0, 0, 0.6);
+        }
+
+        .time-card {
+            position: relative;
+            height: 50px;
+            width: 160px;
+            background: transparent;
+            color: white;
+            z-index: 3;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+        }
+
+        .home-card {
+            border-radius: 25px;
+            justify-content: flex-start;
+            gap: 8px;
+            margin-left: 10px;
+        }
+
+        .away-card {
+            border-radius: 25px;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-right: 10px;
+        }
+
+        .bandeira {
+            height: 32px;
+            width: 48px;
+            object-fit: cover;
+            border-radius: 6px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+        }
+
+        .nome-time {
+            font-family: 'FWC2026-Expanded', 'Arial Black', sans-serif;
+            font-size: 18px;
+            font-weight: 900;
+            letter-spacing: 1px;
+        }
+
+        .cards-slot {
+            display: flex;
+            gap: 3px;
+        }
+
+        .score-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            z-index: 7;
+        }
+
+        .gol-texto {
+            font-family: 'FWC2026-Expanded', 'Arial Black', sans-serif;
+            font-size: 30px;
+            font-weight: 900;
+            color: #ffffff;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+        }
+
+        .logo-central {
+            width: 55px;
+            height: 70px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .logo-central img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.5));
+        }
+
+        .tempo-container {
+            margin-top: 15px;
+            z-index: 15;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .caixa-tempo {
+            font-family: 'FWC2026-Expanded', 'Arial Black', sans-serif;
+            background-image: var(--bg-image);
+            background-size: cover;
+            background-position: center;
+            color: white;
+            font-size: 15px;
+            font-weight: 900;
+            padding: 4px 28px;
+            border-radius: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.6);
+        }
+
+        #placar-odds {
+            margin-top: 15px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 4px 15px;
+            border-radius: 12px;
+            font-size: 11px;
+            color: #fff;
+            font-family: 'FWC2026-Expanded', sans-serif;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .match-meta-info {
+            margin-top: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            color: #d4b561;
+            font-family: 'FWC2026-Expanded', sans-serif;
+            border: 1px solid rgba(212, 181, 97, 0.2);
+            text-transform: uppercase;
+        }
+
+        .stoppage-time-anim {
+            background: #eab308;
+            color: #000;
+            font-family: 'FWC2026-Expanded', sans-serif;
+            font-size: 11px;
+            font-weight: 900;
+            padding: 4px 8px;
+            border-radius: 4px;
+            margin-left: 12px;
+            animation: pulse-stoppage 1.5s infinite;
+        }
+
+        @keyframes pulse-stoppage {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.7);
+            }
+
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 0 10px 4px rgba(234, 179, 8, 0);
+            }
+
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(234, 179, 8, 0);
+            }
+        }
+
+        /* Demais widgets ajustados (Match List, Groups, Lineups) */
+        #match-list-widget {
+            background-color: rgba(19, 19, 20, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+        }
+
+        .match-list-header {
+            padding: 16px 20px;
+            background: transparent;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-family: 'FWC2026-Expanded', 'Arial Black', sans-serif;
+            color: #d4b561;
+            text-align: center;
+            font-size: 15px;
+        }
+
+        .match-list-container {
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .match-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 18px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .match-item:hover,
+        .match-item.selected {
+            background: rgba(139, 92, 246, 0.1);
+            border-color: var(--primary);
+        }
+
+        .match-info {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .match-date {
+            font-size: 12.5px;
+            color: #a8a8a8;
+            font-weight: 600;
+        }
+
+        .match-teams {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-family: 'FWC2026-Condensed', sans-serif;
+            font-size: 16px;
+            color: white;
+        }
+
+        .match-team-flag {
+            width: 26px;
+            height: 18px;
+            border-radius: 3px;
+            object-fit: cover;
+        }
+
+        .match-status {
+            font-size: 12px;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-weight: 800;
+            text-align: center;
+            min-width: 75px;
+            letter-spacing: 0.5px;
+        }
+
+        .status-live {
+            background-color: rgba(239, 68, 68, 0.15);
+            color: var(--espn-red);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            animation: pulse 2s infinite;
+        }
+
+        .status-scheduled {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: #a8a8a8;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .status-finished {
+            background-color: rgba(16, 185, 129, 0.15);
+            color: var(--secondary);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .match-score {
+            font-family: 'FWC2026-Expanded', sans-serif;
+            font-size: 18px;
+            color: #fff;
+            margin: 0 12px;
+            min-width: 45px;
+            text-align: center;
+        }
+
+        .groups-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 8px;
+            padding-bottom: 10px;
+        }
+
+        .group-table-container {
+            border-radius: 16px;
+            overflow: hidden;
+            background-image: var(--bg-image);
+            background-size: cover;
+            background-position: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .group-table-overlay {
+            background: rgba(19, 19, 20, 0.9);
+            backdrop-filter: blur(8px);
+            padding: 18px;
+            width: 100%;
+            height: 100%;
+        }
+
+        .group-table-header {
+            font-family: 'FWC2026-Expanded', 'Arial Black', sans-serif;
+            color: #d4b561;
+            font-size: 15px;
+            text-align: center;
+            margin-bottom: 12px;
+            border-bottom: 1px solid rgba(212, 181, 97, 0.3);
+            padding-bottom: 8px;
+        }
+
+        .group-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: 'FWC2026-Condensed', sans-serif;
+            font-size: 14px;
+        }
+
+        .group-table th {
+            text-align: center;
+            padding: 10px 4px;
+            color: #a8a8a8;
+            font-weight: 600;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .group-table th:nth-child(2) {
+            text-align: left;
+        }
+
+        .group-table td {
+            text-align: center;
+            padding: 10px 4px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            color: #fff;
+        }
+
+        .group-table td:nth-child(2) {
+            text-align: left;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .group-table tr.qualified td:first-child,
+        .group-table tr.qualified td:nth-child(2) {
+            color: var(--secondary);
+            font-weight: bold;
+        }
+
+        #lineups-widget {
+            background-image: var(--bg-image);
+            background-size: cover;
+            background-position: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+        }
+
+        .lineups-overlay {
+            background: rgba(19, 19, 20, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 24px;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .lineups-title {
+            font-family: 'FWC2026-Expanded', 'Arial Black', sans-serif;
+            color: #fff;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+
+        .lineups-columns {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .lineup-team {
+            flex: 1;
+            min-width: 220px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .lineup-team-header {
+            font-family: 'FWC2026-Expanded', 'Arial Black', sans-serif;
+            color: #d4b561;
+            font-size: 14px;
+            text-align: center;
+            margin-bottom: 12px;
+            border-bottom: 1px solid rgba(212, 181, 97, 0.3);
+            padding-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .lineup-team-header img {
+            width: 28px;
+            height: 18px;
+            border-radius: 3px;
+            object-fit: cover;
+        }
+
+        .lineup-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 280px;
+            overflow-y: auto;
+        }
+
+        .lineup-player {
+            font-family: 'FWC2026-Condensed', 'Arial Black', sans-serif;
+            font-size: 14.5px;
+            color: white;
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .player-number {
+            font-weight: bold;
+            color: var(--secondary);
+            min-width: 22px;
+        }
+
+        .yt-container-wrapper {
+            margin-top: 16px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+            background: #000;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+        }
+
+        .yt-container-wrapper iframe,
+        .yt-container-wrapper #yt-player-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .maps-container-wrapper {
+            margin: 10px 0;
+            border-radius: 8px;
+            overflow: hidden;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            max-height: 350px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+        }
+
+        .maps-container-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+
+        /* MODAL E OUTROS AJUSTES RESPONSIVOS MANTIDOS IGUAIS */
+        .match-details-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .match-details-modal.show {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: var(--bg-image);
+            background-size: cover;
+            background-position: center;
+            width: 90%;
+            max-width: 650px;
+            border-radius: 12px;
+            border: 1px solid var(--primary);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+            overflow: hidden;
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+            position: relative;
+        }
+
+        .match-details-modal.show .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-overlay-bg {
+            background: rgba(19, 19, 20, 0.95);
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-family: 'FWC2026-Expanded', sans-serif;
+            color: #d4b561;
+            font-size: 16px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+        }
+
+        .close-modal-btn {
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-size: 28px;
+            cursor: pointer;
+            transition: color 0.2s;
+            line-height: 1;
+        }
+
+        .close-modal-btn:hover {
+            color: var(--espn-red);
+        }
+
+        .modal-body {
+            padding: 20px;
+            max-height: 75vh;
+            overflow-y: auto;
+        }
+
+        @media (max-width: 900px) {
+            .live-feed-section {
+                position: absolute;
+                top: 0;
+                right: 0;
+                height: 100%;
+                width: 320px;
+                transform: translateX(100%);
+                z-index: 200;
+                padding-top: 65px;
+                background: rgba(19, 19, 20, 0.95);
+            }
+
+            .live-feed-section.open {
+                transform: translateX(0);
+                box-shadow: -10px 0 30px rgba(0, 0, 0, 0.7);
+            }
+
+            header {
+                position: relative;
+                z-index: 300;
+                background: rgba(0, 0, 0, 0.6);
+                backdrop-filter: blur(10px);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .initial-greeting {
+                font-size: 1.6rem;
+                top: 30%;
+            }
+
+            header {
+                padding: 10px 15px;
+            }
+
+            .logo-resenia {
+                font-size: 16px;
+                gap: 6px;
+            }
+
+            .header-actions {
+                gap: 6px;
+            }
+
+            #calendar-btn,
+            #toggle-feed-btn {
+                padding: 6px 10px;
+                font-size: 10px;
+            }
+
+            .live-badge {
+                font-size: 10px;
+                padding: 4px 8px;
+            }
+
+            .chat-messages {
+                padding: 15px 15px 100px 15px;
+            }
+
+            .message {
+                max-width: 95%;
+                padding: 12px 16px;
+                font-size: 14px;
+            }
+
+            .chat-input-container {
+                padding: 0 10px;
+                bottom: 15px;
+            }
+
+            .chat-input-area {
+                padding: 8px 12px;
+                gap: 8px;
+            }
+
+            .chat-input-area input {
+                font-size: 14px;
+            }
+
+            .pro-badge {
+                display: none;
+                /* Hide on small screens for space */
+            }
+
+            .groups-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .placar-main {
+                padding: 5px 0;
+            }
+
+            .time-card {
+                width: auto;
+                max-width: 100px;
+                padding: 0 5px;
+                height: 40px;
+                gap: 4px;
+            }
+
+            .nome-time {
+                font-size: 13px;
+            }
+
+            .bandeira {
+                height: 20px;
+                width: 28px;
+            }
+
+            .gol-texto {
+                font-size: 20px;
+            }
+
+            .logo-central {
+                width: 35px;
+                height: 45px;
+            }
+
+            .score-container {
+                gap: 10px;
+            }
+
+            #placar-odds {
+                flex-wrap: wrap;
+                text-align: center;
+                justify-content: center;
+                gap: 8px;
+                font-size: 10px;
+                padding: 8px;
+            }
+
+            .match-meta-info {
+                font-size: 10px;
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .live-feed-section {
+                width: 100%;
+                max-width: 100%;
+            }
+
+            .header-actions {
+                gap: 4px;
+            }
+
+            #calendar-btn,
+            #toggle-feed-btn {
+                padding: 5px 8px;
+                font-size: 9px;
+            }
+
+            .logo-resenia {
+                font-size: 14px;
+            }
+
+            .time-card.home-card {
+                flex-direction: column;
+                align-items: flex-start;
+                margin-left: 5px;
+            }
+
+            .time-card.away-card {
+                flex-direction: column;
+                align-items: flex-end;
+                margin-right: 5px;
+            }
+
+            .nome-time {
+                font-size: 12px;
+            }
+
+            .bandeira {
+                height: 16px;
+                width: 24px;
+            }
+
+            .logo-central {
+                width: 25px;
+                height: 35px;
+            }
+
+            .gol-texto {
+                font-size: 18px;
+            }
+
+            .modal-content {
+                width: 95%;
+                margin: 10px;
+            }
+
+            .modal-body {
+                padding: 15px;
+            }
+
+            .lineups-columns {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body onload="initApp()">
+
+    <header>
+        <div class="logo-resenia">
+            ⚽ ResenIA
+        </div>
+        <div class="live-badge">AO VIVO</div>
+        <div class="header-actions">
+            <button id="calendar-btn"
+                onclick="document.getElementById('user-input').value='calendário de jogos'; enviarMensagem();">📅
+                CALENDÁRIO</button>
+            <button id="toggle-feed-btn" onclick="toggleFeed()">OCULTAR FEED</button>
+        </div>
+    </header>
+
+    <div class="content-split">
+
+        <!-- CHAT RESENIA (PRINCIPAL) -->
+        <div class="chat-section">
+
+            <!-- SAUDAÇÃO INICIAL TIPO GEMINI -->
+            <div id="initial-greeting" class="initial-greeting">
+                Como posso ajudar, Torcedor?
+            </div>
+
+            <div class="chat-messages" id="chat-box">
+                <!-- As mensagens aparecerão aqui e a saudação sumirá -->
+            </div>
+
+            <!-- BARRA DE PESQUISA TIPO GEMINI -->
+            <div class="chat-input-container">
+                <div class="chat-input-area">
+                    <input type="text" id="user-input"
+                        placeholder="Pesquise jogos na CazéTV ou peça um relatório tático da Copa..."
+                        onkeypress="handleKeyPress(event)" oninput="toggleSendIcon()">
+
+                    <button class="icon-btn" id="send-btn" onclick="enviarMensagem()" title="Falar ou Enviar">
+                        <svg id="mic-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                            <line x1="12" y1="19" x2="12" y2="22"></line>
+                        </svg>
+                        <svg id="send-icon" style="display:none;" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- FEED LATERAL (Mantido a lógica original) -->
+        <div class="live-feed-section">
+            <div class="feed-header">
+                TRANSMISSÃO AO VIVO
+                <span class="api-status" id="system-status">CONECTANDO...</span>
+            </div>
+            <div style="display: none;"><span id="game-clock">00:00</span></div>
+            <div class="feed-content" id="api-feed">
+                <!-- Itens do feed preenchidos via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- MANTENDO OS WIDGETS OCULTOS DO CÓDIGO ORIGINAL -->
+    <div id="match-list-widget">
+        <div class="match-list-header">
+            CALENDÁRIO & PLACARES
+            <input type="text" id="search-match-input" placeholder="🔍 Filtrar por seleção ou data..."
+                oninput="filtrarJogos()"
+                style="display: block; width: 100%; margin-top: 10px; padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.4); color: white; font-size: 12px; outline: none;">
+        </div>
+        <div class="match-list-container" id="match-list-container"></div>
+    </div>
+
+    <div id="placar-widget">
+        <div class="placar-container">
+            <div class="placar-container placar-interactive" onclick="abrirDetalhesPartida()">
+                <div class="placar-main">
+                    <div class="barra-dourada"></div>
+                    <div class="time-card home-card">
+                        <img id="home-logo" src="" class="bandeira" alt="Home">
+                        <span id="home-abbrev" class="nome-time">CASA</span>
+                        <div id="cards-home" class="cards-slot"></div>
+                    </div>
+
+                    <div class="score-container">
+                        <span id="score-home" class="gol-texto">0</span>
+                        <div class="logo-central">
+                            <img src="https://logodownload.org/wp-content/uploads/2026/06/2026-fifa-world-cup-logo-0.png"
+                                alt="World Cup 2026" onerror="this.style.display='none'">
+                        </div>
+                        <span id="score-away" class="gol-texto">0</span>
+                    </div>
+
+                    <div class="time-card away-card">
+                        <div id="cards-away" class="cards-slot"></div>
+                        <span id="away-abbrev" class="nome-time">FORA</span>
+                        <img id="away-logo" src="" class="bandeira" alt="Away">
+                    </div>
+                </div>
+
+                <div class="tempo-container">
+                    <div class="caixa-tempo" id="game-clock-placar">00:00</div>
+                </div>
+
+                <div id="placar-odds">
+                    📊 WIN PROBABILITY: <span id="prob-home" style="color: #10b981;">CASA: --%</span> | <span
+                        id="prob-draw" style="color: #94a3b8;">EMP: --%</span> | <span id="prob-away"
+                        style="color: #10b981;">FORA: --%</span>
+                </div>
+                <div class="match-meta-info">
+                    📅 <span id="placar-date">Data</span> &nbsp;|&nbsp; 📺 <span
+                        id="placar-broadcast">Transmissão</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="groups-widget">
+        <div class="groups-grid"></div>
+    </div>
+
+    <div id="lineups-widget">
+        <div class="lineups-overlay">
+            <div class="lineups-title">ESCALAÇÕES</div>
+            <div class="lineups-columns">
+                <div class="lineup-team">
+                    <div class="lineup-team-header">
+                        <img id="lineup-home-logo" src="" alt=""> <span id="lineup-home-name">CASA</span>
+                    </div>
+                    <ul id="lineup-home-list" class="lineup-list"></ul>
+                </div>
+                <div class="lineup-team">
+                    <div class="lineup-team-header">
+                        <span id="lineup-away-name">FORA</span> <img id="lineup-away-logo" src="" alt="">
+                    </div>
+                    <ul id="lineup-away-list" class="lineup-list"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE DETALHES -->
+    <div id="match-details-modal" class="match-details-modal">
+        <div class="modal-content">
+            <div class="modal-overlay-bg">
+                <div class="modal-header">
+                    <div class="modal-title">DETALHES DA PARTIDA</div>
+                    <button class="close-modal-btn" onclick="fecharDetalhesPartida()">&times;</button>
+                </div>
+                <div class="modal-body" id="modal-body-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+         LÓGICA JAVASCRIPT (MANTIDA 100% INTACTA)
+         ========================================================================== -->
+    <script>
+        let timeCasa = { sigla: 'GER', logo: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSmtfwvTv75kPS-JZY00Z7I7FHhh8Bx5HJ_BQ&s', nome: 'Alemanha' };
+        let timeFora = { sigla: 'BRA', logo: 'https://upload.wikimedia.org/wikipedia/commons/0/05/Flag_of_Brazil.svg', nome: 'Brasil' };
+        let outrosJogosList = [];
+        let currentGameId = null;
+        let currentBroadcast = "A Definir";
+
+        let serpApiKey = (typeof process !== 'undefined' && process.env && process.env.SERP_API_KEY) || '8980a597466a7113b01a34a77f047e552562395e6bb116280a3d29e25766a15e';
+        let groqApiKey = (typeof process !== 'undefined' && process.env && process.env.GROQ_API_KEY) || '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';
+        let currentModelId = 'openai/gpt-oss-120b';
+
+        let isAnimatingEvent = false;
+        let relogioMin = 85;
+        let relogioSeg = 39;
+
+        const chatBox = document.getElementById('chat-box');
+        const inputField = document.getElementById('user-input');
+        const feedBox = document.getElementById('api-feed');
+        const placarWidget = document.getElementById('placar-widget');
+        const groupsWidget = document.getElementById('groups-widget');
+        const lineupsWidget = document.getElementById('lineups-widget');
+        const matchListWidget = document.getElementById('match-list-widget');
+
+        let playerYouTube;
+        let isYouTubeReady = false;
+
+        function onYouTubeIframeAPIReady() { isYouTubeReady = true; }
+
+        // Troca icon do input ao digitar
+        function toggleSendIcon() {
+            if (inputField.value.trim() !== '') {
+                document.getElementById('mic-icon').style.display = 'none';
+                document.getElementById('send-icon').style.display = 'block';
+            } else {
+                document.getElementById('mic-icon').style.display = 'block';
+                document.getElementById('send-icon').style.display = 'none';
+            }
+        }
+
+        function toggleFeed() {
+            const feedSection = document.querySelector('.live-feed-section');
+            const btn = document.getElementById('toggle-feed-btn');
+
+            if (window.innerWidth <= 900) {
+                if (feedSection.classList.contains('open')) {
+                    feedSection.classList.remove('open');
+                    btn.innerText = 'MOSTRAR FEED';
+                } else {
+                    feedSection.classList.add('open');
+                    btn.innerText = 'OCULTAR FEED';
+                }
+            } else {
+                if (feedSection.style.display === 'none') {
+                    feedSection.style.display = 'flex';
+                    btn.innerText = 'OCULTAR FEED';
+                } else {
+                    feedSection.style.display = 'none';
+                    btn.innerText = 'MOSTRAR FEED';
+                }
+            }
+        }
+
+        function initApp() {
+            setInterval(atualizarRelogio, 1000);
+            fetchRealESPNData();
+            fetchRealStandings();
+        }
+
+        async function fetchRealESPNData() {
+            try {
+                const statusBadge = document.getElementById('system-status');
+                statusBadge.innerText = "CONECTADO: fifa.world";
+
+                const url = 'https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard?limit=200';
+                const res = await fetch(url);
+                const data = await res.json();
+
+                if (data && data.events && data.events.length > 0) {
+                    outrosJogosList = data.events;
+                    if (!currentGameId) selecionarJogo(data.events[0].id, false);
+                    else selecionarJogo(currentGameId, false);
+                    renderizarListaDeJogos(data.events);
+
+                    if (feedBox.children.length > 5) feedBox.innerHTML = '';
+                    data.events.slice(0, 3).forEach(event => {
+                        adicionarNoFeedRealAPI(`[ESPN LIVE] ${event.name} - ${event.status.type.detail}`);
+                    });
+                } else {
+                    gerarLineupsMock();
+                    outrosJogosList = gerarMockEventos();
+                    renderizarListaDeJogos(outrosJogosList);
+                    if (!currentGameId) selecionarJogo(outrosJogosList[0].id, false);
+
+                    const newsUrl = 'https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/news';
+                    const newsRes = await fetch(newsUrl);
+                    const newsData = await newsRes.json();
+
+                    if (newsData && newsData.articles) {
+                        newsData.articles.slice(0, 4).forEach(article => {
+                            adicionarNoFeedRealAPI(`[ESPN NEWS] ${article.headline}`);
+                        });
+                    } else {
+                        adicionarNoFeedRealAPI(`[ESPN INFO] Aguardando jogos e atualizações da FIFA...`);
+                    }
+                }
+            } catch (error) {
+                console.error("Erro API ESPN:", error);
+                adicionarNoFeedRealAPI(`[ERRO API] Não foi possível carregar os dados reais.`);
+                document.getElementById('system-status').innerText = "OFFLINE";
+                document.getElementById('system-status').style.background = "var(--espn-red)";
+            }
+        }
+
+        async function fetchRealStandings() {
+            try {
+                const url = 'https://site.api.espn.com/apis/v2/sports/soccer/fifa.world/standings';
+                const res = await fetch(url);
+                const data = await res.json();
+
+                if (data && data.children && data.children.length > 0) {
+                    const grid = document.querySelector('.groups-grid');
+                    grid.innerHTML = '';
+
+                    data.children.forEach(grupo => {
+                        const groupName = grupo.name || grupo.abbreviation;
+                        const entries = grupo.standings?.entries || [];
+                        let tableHTML = `
+                        <div class="group-table-container">
+                            <div class="group-table-overlay">
+                                <div class="group-table-header">${groupName}</div>
+                                <table class="group-table">
+                                    <tr><th>Pos</th><th>Equipe</th><th>Pts</th><th>J</th><th>V</th><th>E</th><th>D</th><th>SG</th></tr>
+                        `;
+
+                        entries.forEach((entry, idx) => {
+                            const getStat = (name) => {
+                                const st = entry.stats?.find(s => s.name === name || s.abbreviation === name);
+                                return st ? st.value : '0';
+                            };
+
+                            const pts = getStat('points') || getStat('P');
+                            const j = getStat('gamesPlayed') || getStat('GP');
+                            const v = getStat('wins') || getStat('W');
+                            const e = getStat('ties') || getStat('T');
+                            const d = getStat('losses') || getStat('L');
+                            const sg = getStat('pointDifferential') || getStat('GD') || getStat('PD');
+                            const teamName = entry.team?.abbreviation || entry.team?.displayName?.substring(0, 3).toUpperCase();
+                            const logo = entry.team?.logos?.[0]?.href || '';
+                            const qualifiedClass = idx < 2 ? 'qualified' : '';
+
+                            tableHTML += `
+                                <tr class="${qualifiedClass}">
+                                    <td>${idx + 1}</td>
+                                    <td><img src="${logo}" style="width:16px; height:12px; border-radius:2px; object-fit:cover;" onerror="this.style.display='none'"> ${teamName}</td>
+                                    <td>${pts}</td><td>${j}</td><td>${v}</td><td>${e}</td><td>${d}</td><td>${sg}</td>
+                                </tr>
+                            `;
+                        });
+
+                        tableHTML += `</table></div></div>`;
+                        grid.innerHTML += tableHTML;
+                    });
+                }
+            } catch (error) { console.error("Erro API Standings:", error); }
+        }
+
+        function adicionarNoFeedRealAPI(texto) {
+            const timeStr = document.getElementById('game-clock').innerText;
+            const item = document.createElement('div');
+            item.className = `feed-item real-api`;
+            let formattedText = texto.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+            if (texto.includes('**[')) item.innerHTML = `⚽ ${formattedText}`;
+            else item.innerHTML = `<span class="feed-time">${timeStr}</span> ${formattedText}`;
+            feedBox.prepend(item);
+        }
+
+        async function selecionarJogo(gameId, avisarChat = true) {
+            currentGameId = gameId;
+            const game = outrosJogosList.find(g => g.id === gameId);
+            if (!game) return;
+
+            const comp = game.competitions[0];
+            const home = comp.competitors.find(c => c.homeAway === 'home');
+            const away = comp.competitors.find(c => c.homeAway === 'away');
+
+            if (home && away) {
+                timeCasa = { sigla: home.team.abbreviation || 'CASA', logo: home.team.logo, nome: home.team.displayName };
+                timeFora = { sigla: away.team.abbreviation || 'FORA', logo: away.team.logo, nome: away.team.displayName };
+
+                if (document.getElementById('home-logo')) document.getElementById('home-logo').src = timeCasa.logo;
+                if (document.getElementById('home-abbrev')) document.getElementById('home-abbrev').innerText = timeCasa.sigla;
+                if (document.getElementById('score-home')) document.getElementById('score-home').innerText = home.score || "0";
+
+                if (document.getElementById('away-logo')) document.getElementById('away-logo').src = timeFora.logo;
+                if (document.getElementById('away-abbrev')) document.getElementById('away-abbrev').innerText = timeFora.sigla;
+                if (document.getElementById('score-away')) document.getElementById('score-away').innerText = away.score || "0";
+
+                const dateObj = new Date(game.date);
+                if (document.getElementById('placar-date')) {
+                    document.getElementById('placar-date').innerText = `${dateObj.toLocaleDateString('pt-BR')} às ${dateObj.getHours().toString().padStart(2, '0')}:${dateObj.getMinutes().toString().padStart(2, '0')}`;
+                }
+
+                let broadcastsStr = "A Definir";
+                if (comp.broadcasts && comp.broadcasts.length > 0) {
+                    let names = [];
+                    comp.broadcasts.forEach(b => { if (b.names) names.push(...b.names); });
+                    if (names.length > 0) broadcastsStr = names.join(', ');
+                }
+                currentBroadcast = broadcastsStr;
+                if (document.getElementById('placar-broadcast')) document.getElementById('placar-broadcast').innerText = broadcastsStr;
+
+                const clockEl = document.getElementById('game-clock');
+                if (game.status.type.state === 'in') {
+                    clockEl.innerText = game.status.displayClock || game.status.type.detail;
+                    clockEl.style.color = "white";
+                } else if (game.status.type.state === 'post') {
+                    clockEl.innerText = "FIM";
+                    clockEl.style.color = "#10b981";
+                } else {
+                    const dataJogo = new Date(game.date);
+                    clockEl.innerText = `${dataJogo.getHours().toString().padStart(2, '0')}:${dataJogo.getMinutes().toString().padStart(2, '0')}`;
+                    clockEl.style.color = "#a8a8a8";
+                }
+            }
+
+            document.querySelectorAll('.match-item').forEach(el => el.classList.remove('selected'));
+            const selectedItem = document.getElementById(`match-${gameId}`);
+            if (selectedItem) selectedItem.classList.add('selected');
+
+            try {
+                if (gameId.startsWith('mock-')) {
+                    gerarLineupsMock();
+                } else {
+                    const summaryUrl = `https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/summary?event=${gameId}`;
+                    const summaryRes = await fetch(summaryUrl);
+                    const summaryData = await summaryRes.json();
+
+                    if (summaryData.rosters) preencherLineups(summaryData.rosters);
+                    else gerarLineupsMock();
+
+                    if (summaryData.predictor) {
+                        const probH = summaryData.predictor.homeChance ? summaryData.predictor.homeChance.toFixed(1) + "%" : "--%";
+                        const probA = summaryData.predictor.awayChance ? summaryData.predictor.awayChance.toFixed(1) + "%" : "--%";
+                        const probD = summaryData.predictor.tieChance ? summaryData.predictor.tieChance.toFixed(1) + "%" : "--%";
+                        if (document.getElementById('prob-home')) document.getElementById('prob-home').innerText = `${timeCasa.sigla}: ${probH}`;
+                        if (document.getElementById('prob-draw')) document.getElementById('prob-draw').innerText = `EMP: ${probD}`;
+                        if (document.getElementById('prob-away')) document.getElementById('prob-away').innerText = `${timeFora.sigla}: ${probA}`;
+                    }
+
+                    if (summaryData.keyEvents && summaryData.keyEvents.length > 0) {
+                        const lances = summaryData.keyEvents.slice(-5).reverse();
+                        lances.forEach(lance => {
+                            const tempo = lance.clock ? lance.clock.displayValue : '';
+                            const texto = lance.text || lance.shortText;
+                            adicionarNoFeedRealAPI(`**[${tempo}]** ${texto}`);
+                        });
+                    }
+                }
+            } catch (e) { gerarLineupsMock(); }
+
+            if (avisarChat && document.getElementById('initial-greeting').style.display === 'none') {
+                processarRespostaIA(`selecionei o jogo ${timeCasa.nome} x ${timeFora.nome}`);
+            }
+        }
+
+        function renderizarListaDeJogos(jogos) {
+            const container = document.getElementById('match-list-container');
+            container.innerHTML = '';
+
+            if (!jogos || jogos.length === 0) {
+                container.innerHTML = `<div style="text-align:center; padding: 20px; color: #94a3b8;">Nenhum jogo encontrado.</div>`;
+                return;
+            }
+
+            jogos.forEach(game => {
+                const comp = game.competitions[0];
+                const home = comp.competitors.find(c => c.homeAway === 'home');
+                const away = comp.competitors.find(c => c.homeAway === 'away');
+                if (!home || !away) return;
+
+                const dateObj = new Date(game.date);
+                const dateStr = `${dateObj.toLocaleDateString('pt-BR')} às ${dateObj.getHours().toString().padStart(2, '0')}:${dateObj.getMinutes().toString().padStart(2, '0')}`;
+
+                let broadcastsStr = "A Definir";
+                if (comp.broadcasts && comp.broadcasts.length > 0) {
+                    let names = [];
+                    comp.broadcasts.forEach(b => { if (b.names) names.push(...b.names); });
+                    if (names.length > 0) broadcastsStr = names.join(', ');
+                }
+
+                let statusClass = 'status-scheduled';
+                let statusText = dateObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                let scoreText = 'vs';
+
+                if (game.status.type.state === 'in') {
+                    statusClass = 'status-live';
+                    statusText = game.status.displayClock || game.status.type.detail;
+                    scoreText = `${home.score} - ${away.score}`;
+                } else if (game.status.type.state === 'post') {
+                    statusClass = 'status-finished';
+                    statusText = 'FINAL';
+                    scoreText = `${home.score} - ${away.score}`;
+                }
+
+                const item = document.createElement('div');
+                item.className = `match-item ${game.id === currentGameId ? 'selected' : ''}`;
+                item.id = `match-${game.id}`;
+                item.onclick = () => selecionarJogo(game.id);
+
+                item.innerHTML = `
+                    <div class="match-info">
+                        <span class="match-date">${dateStr}</span>
+                        <span class="match-broadcast" style="font-size: 11px; color: #10b981; font-weight: bold;">📺 ${broadcastsStr}</span>
+                        <div class="match-teams">
+                            <img src="${home.team.logo}" class="match-team-flag" onerror="this.src='https://placehold.co/24x16/0f172a/FFF?text=${home.team.abbreviation}'">
+                            <span>${home.team.abbreviation || home.team.displayName.substring(0, 3).toUpperCase()}</span>
+                            <span class="match-score">${scoreText}</span>
+                            <span>${away.team.abbreviation || away.team.displayName.substring(0, 3).toUpperCase()}</span>
+                            <img src="${away.team.logo}" class="match-team-flag" onerror="this.src='https://placehold.co/24x16/0f172a/FFF?text=${away.team.abbreviation}'">
+                        </div>
+                    </div>
+                    <div class="match-status ${statusClass}">${statusText}</div>
+                `;
+                container.appendChild(item);
+            });
+            filtrarJogos();
+        }
+
+        function filtrarJogos() {
+            const query = document.getElementById('search-match-input').value.toLowerCase();
+            const items = document.querySelectorAll('.match-item');
+            items.forEach(item => {
+                const textContent = item.innerText.toLowerCase();
+                item.style.display = textContent.includes(query) ? 'flex' : 'none';
+            });
+        }
+
+        // Funções Mockadas e Preenchimento mantidas intactas
+        function gerarMockEventos() {
+            return [
+                { id: 'mock-1', date: '2026-06-11T19:00:00-03:00', status: { type: { state: 'pre', detail: 'Agendado' }, displayClock: '00:00' }, competitions: [{ competitors: [{ homeAway: 'home', team: { abbreviation: 'MEX', displayName: 'México', logo: 'https://upload.wikimedia.org/wikipedia/commons/f/fc/Flag_of_Mexico.svg' }, score: "0" }, { homeAway: 'away', team: { abbreviation: 'RSA', displayName: 'África do Sul', logo: 'https://upload.wikimedia.org/wikipedia/commons/a/af/Flag_of_South_Africa.svg' }, score: "0" }], broadcasts: [{ names: ["CazéTV", "YouTube"] }] }] },
+                { id: 'mock-2', date: '2026-06-19T22:00:00-03:00', status: { type: { state: 'in', detail: 'Ao Vivo' }, displayClock: '45:00' }, competitions: [{ competitors: [{ homeAway: 'home', team: { abbreviation: 'BRA', displayName: 'Brasil', logo: 'https://upload.wikimedia.org/wikipedia/commons/0/05/Flag_of_Brazil.svg' }, score: "2" }, { homeAway: 'away', team: { abbreviation: 'GER', displayName: 'Alemanha', logo: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSmtfwvTv75kPS-JZY00Z7I7FHhh8Bx5HJ_BQ&s' }, score: "0" }], broadcasts: [{ names: ["CazéTV", "YouTube"] }] }] }
+            ];
+        }
+
+        function atualizarRelogio() {
+            relogioSeg++;
+            if (relogioSeg >= 60) { relogioSeg = 0; relogioMin++; }
+            const game = outrosJogosList.find(g => g.id === currentGameId);
+            if (game && game.id.startsWith('mock-') && game.status.type.state === 'in') {
+                document.getElementById('game-clock').innerText = `${relogioMin.toString().padStart(2, '0')}:${relogioSeg.toString().padStart(2, '0')}`;
+            }
+        }
+
+        function preencherLineups(rosters) {
+            if (document.getElementById('lineup-home-logo')) document.getElementById('lineup-home-logo').src = timeCasa.logo;
+            if (document.getElementById('lineup-home-name')) document.getElementById('lineup-home-name').innerText = timeCasa.sigla;
+            if (document.getElementById('lineup-away-logo')) document.getElementById('lineup-away-logo').src = timeFora.logo;
+            if (document.getElementById('lineup-away-name')) document.getElementById('lineup-away-name').innerText = timeFora.sigla;
+
+            const homeRoster = rosters.find(r => r.homeAway === 'home')?.roster || [];
+            const awayRoster = rosters.find(r => r.homeAway === 'away')?.roster || [];
+
+            if (document.getElementById('lineup-home-list')) {
+                document.getElementById('lineup-home-list').innerHTML = homeRoster.map(p => { const pos = p.position ? p.position.abbreviation : '-'; return `<li class="lineup-player"><span class="player-number">${p.jersey || '-'}</span> <span style="color:#94a3b8; font-size:11px;">[${pos}]</span> ${p.athlete.shortName || p.athlete.displayName}</li>`; }
+                ).join('');
+            }
+            if (document.getElementById('lineup-away-list')) {
+                document.getElementById('lineup-away-list').innerHTML = awayRoster.map(p => { const pos = p.position ? p.position.abbreviation : '-'; return `<li class="lineup-player"><span class="player-number">${p.jersey || '-'}</span> <span style="color:#94a3b8; font-size:11px;">[${pos}]</span> ${p.athlete.shortName || p.athlete.displayName}</li>`; }
+                ).join('');
+            }
+        }
+
+        function gerarLineupsMock() {
+            if (document.getElementById('lineup-home-logo')) document.getElementById('lineup-home-logo').src = timeCasa.logo;
+            if (document.getElementById('lineup-home-name')) document.getElementById('lineup-home-name').innerText = timeCasa.sigla;
+            if (document.getElementById('lineup-away-logo')) document.getElementById('lineup-away-logo').src = timeFora.logo;
+            if (document.getElementById('lineup-away-name')) document.getElementById('lineup-away-name').innerText = timeFora.sigla;
+
+            const mockHome = ['1. Neuer', '6. Kimmich', '2. Rüdiger', '4. Tah', '3. Mittelstädt', '8. Kroos', '21. Gündoğan', '10. Musiala', '17. Wirtz', '7. Havertz', '9. Müller'];
+            const mockAway = ['1. Alisson', '2. Danilo', '4. Marquinhos', '3. Militão', '6. Arana', '5. Casemiro', '8. Paquetá', '10. Rodrygo', '11. Raphinha', '7. Vini Jr.', '9. Endrick'];
+
+            if (document.getElementById('lineup-home-list')) {
+                document.getElementById('lineup-home-list').innerHTML = mockHome.map(p => {
+                    let parts = p.split('. '); return `<li class="lineup-player"><span class="player-number">${parts[0]}</span> ${parts[1]}</li>`;
+                }).join('');
+            }
+            if (document.getElementById('lineup-away-list')) {
+                document.getElementById('lineup-away-list').innerHTML = mockAway.map(p => {
+                    let parts = p.split('. '); return `<li class="lineup-player"><span class="player-number">${parts[0]}</span> ${parts[1]}</li>`;
+                }).join('');
+            }
+        }
+
+        async function abrirDetalhesPartida() {
+            const modal = document.getElementById('match-details-modal');
+            const modalBody = document.getElementById('modal-body-content');
+            modal.classList.add('show');
+            modalBody.innerHTML = '<div style="text-align:center; padding: 40px; color: #d4b561; font-family:\'FWC2026-Expanded\', sans-serif;">CARREGANDO DADOS DA ESPN...</div>';
+
+            let homeScore = document.getElementById('score-home').innerText;
+            let awayScore = document.getElementById('score-away').innerText;
+            let statusText = document.getElementById('game-clock-placar').innerText;
+
+            const homeList = document.getElementById('lineup-home-list').innerHTML || '<li class="lineup-player">Dados indisponíveis...</li>';
+            const awayList = document.getElementById('lineup-away-list').innerHTML || '<li class="lineup-player">Dados indisponíveis...</li>';
+
+            const game = outrosJogosList.find(g => g.id === currentGameId);
+            let isStoppageTime = false; let addedTimeText = "+";
+
+            if (game && game.status && game.status.type.state === 'in') {
+                const detail = game.status.type.detail || '';
+                const clock = game.status.displayClock || '';
+                if (detail.includes('+') || clock.includes('+')) {
+                    isStoppageTime = true;
+                    const match = detail.match(/\+\s*\d+/) || clock.match(/\+\s*\d+/);
+                    if (match) addedTimeText = match[0];
+                } else {
+                    let min = parseInt(clock.split(':')[0]);
+                    let period = game.status.period;
+                    if ((period === 1 && min >= 45) || (period === 2 && min >= 90)) {
+                        isStoppageTime = true; addedTimeText = "+Tempo Extra";
+                    }
+                }
+            }
+
+            if (currentGameId && currentGameId.startsWith('mock-') && relogioMin >= 90) {
+                isStoppageTime = true; addedTimeText = "+ 5 MIN";
+            }
+
+            let stoppageHtml = isStoppageTime ? `<div class="stoppage-time-anim">${addedTimeText} ACRÉSCIMOS</div>` : '';
+            let posseCasa = 50, posseFora = 50, chutesCasa = 0, chutesFora = 0, faltasCasa = 0, faltasFora = 0;
+
+            try {
+                if (currentGameId && !currentGameId.startsWith('mock-')) {
+                    const summaryUrl = `https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/summary?event=${currentGameId}`;
+                    const summaryRes = await fetch(summaryUrl);
+                    const summaryData = await summaryRes.json();
+
+                    if (summaryData.boxscore && summaryData.boxscore.teams) {
+                        const t0 = summaryData.boxscore.teams[0]; const t1 = summaryData.boxscore.teams[1];
+                        let hTeam = (t0.team && t0.team.abbreviation === timeCasa.sigla) ? t0 : t1;
+                        let aTeam = (t0.team && t0.team.abbreviation === timeFora.sigla) ? t0 : t1;
+
+                        const getStat = (team, statName) => {
+                            if (!team || !team.statistics) return 0;
+                            const s = team.statistics.find(st => st.name === statName);
+                            return s ? s.displayValue : 0;
+                        };
+
+                        posseCasa = getStat(hTeam, 'possessionPct') || 50; posseFora = getStat(aTeam, 'possessionPct') || (100 - posseCasa);
+                        chutesCasa = getStat(hTeam, 'shots') || 0; chutesFora = getStat(aTeam, 'shots') || 0;
+                        faltasCasa = getStat(hTeam, 'fouls') || 0; faltasFora = getStat(aTeam, 'fouls') || 0;
+                    }
+                } else {
+                    posseCasa = Math.floor(Math.random() * 20) + 40; posseFora = 100 - posseCasa;
+                    chutesCasa = Math.floor(Math.random() * 15) + 3; chutesFora = Math.floor(Math.random() * 15) + 3;
+                    faltasCasa = Math.floor(Math.random() * 10) + 5; faltasFora = Math.floor(Math.random() * 10) + 5;
+                }
+            } catch (e) { console.error("Erro stats modal", e); }
+
+            modalBody.innerHTML = `
+                <div style="text-align:center; margin-bottom:20px;">
+                    <div style="display:flex; justify-content:center; align-items:center; gap:15px; font-family:'FWC2026-Expanded', sans-serif;">
+                        <img src="${timeCasa.logo}" style="width:45px; height:30px; border-radius:4px; box-shadow: 0 2px 5px rgba(0,0,0,0.5);">
+                        <span style="font-size:32px; text-shadow: 2px 2px 4px rgba(0,0,0,0.8);">${homeScore}</span>
+                        <span style="color:#94a3b8; font-size: 18px;">X</span>
+                        <span style="font-size:32px; text-shadow: 2px 2px 4px rgba(0,0,0,0.8);">${awayScore}</span>
+                        <img src="${timeFora.logo}" style="width:45px; height:30px; border-radius:4px; box-shadow: 0 2px 5px rgba(0,0,0,0.5);">
+                    </div>
+                    <div style="color:#10b981; font-weight:bold; margin-top:10px; font-size:14px; display:flex; justify-content:center; align-items:center;">
+                        <span>STATUS: ${statusText}</span> ${stoppageHtml}
+                    </div>
+                </div>
+                <div style="background:rgba(0,0,0,0.4); padding:15px; border-radius:8px; margin-bottom:20px; border:1px solid rgba(255,255,255,0.1);">
+                    <h4 style="color:#d4b561; text-align:center; margin-bottom:15px; font-family:'FWC2026-Expanded', sans-serif; font-size:12px;">ESTATÍSTICAS DA PARTIDA</h4>
+                    <div style="display:flex; justify-content:space-between; text-align:center; font-size:13px; font-weight:bold;">
+                        <div style="flex:1;"><div>POSSE DE BOLA</div><div style="color:#94a3b8; margin-top:5px;">${posseCasa}% - ${posseFora}%</div></div>
+                        <div style="flex:1;"><div>FINALIZAÇÕES</div><div style="color:#94a3b8; margin-top:5px;">${chutesCasa} - ${chutesFora}</div></div>
+                        <div style="flex:1;"><div>FALTAS</div><div style="color:#94a3b8; margin-top:5px;">${faltasCasa} - ${faltasFora}</div></div>
+                    </div>
+                </div>
+                <div style="display:flex; gap:15px; flex-wrap:wrap;">
+                    <div style="flex:1; min-width:200px; background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; border: 1px solid rgba(255,255,255,0.05);">
+                        <div style="text-align:center; font-family:'FWC2026-Expanded', sans-serif; color:#d4b561; font-size:12px; margin-bottom:10px; border-bottom:1px solid #d4b561; padding-bottom:5px;">${timeCasa.nome.toUpperCase()}</div>
+                        <ul class="lineup-list" style="max-height:220px; overflow-y:auto; padding-right:5px;">${homeList}</ul>
+                    </div>
+                    <div style="flex:1; min-width:200px; background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; border: 1px solid rgba(255,255,255,0.05);">
+                        <div style="text-align:center; font-family:'FWC2026-Expanded', sans-serif; color:#d4b561; font-size:12px; margin-bottom:10px; border-bottom:1px solid #d4b561; padding-bottom:5px;">${timeFora.nome.toUpperCase()}</div>
+                        <ul class="lineup-list" style="max-height:220px; overflow-y:auto; padding-right:5px;">${awayList}</ul>
+                    </div>
+                </div>
+            `;
+        }
+
+        function fecharDetalhesPartida() { document.getElementById('match-details-modal').classList.remove('show'); }
+
+        async function fetchWebSearchResults(query) {
+            if (!serpApiKey) return `**[ERRO]** Chave SerpApi ausente. Adicione-a nas configurações.`;
+
+            let engine = 'google';
+            const qLower = query.toLowerCase();
+
+            const mapKeywords = ['mapa', 'onde fica', 'endereço', 'localização', 'perto de'];
+            const ytKeywords = ['youtube', 'vídeo', 'video', 'assistir', 'canal do'];
+
+            if (mapKeywords.some(k => qLower.includes(k))) engine = 'google_maps';
+            else if (ytKeywords.some(k => qLower.includes(k))) engine = 'youtube';
+
+            let endpoint = `https://serpapi.com/search.json?api_key=${serpApiKey}&engine=${engine}&gl=br&hl=pt-br`;
+
+            if (engine === 'google_maps') endpoint += `&q=${encodeURIComponent(query)}&type=search`;
+            else if (engine === 'youtube') endpoint += `&search_query=${encodeURIComponent(query)}`;
+            else endpoint += `&q=${encodeURIComponent(query)}`;
+
+            try {
+                let response = await fetch(`https://corsproxy.io/?${encodeURIComponent(endpoint)}`);
+                if (!response.ok) throw new Error("Erro no proxy SerpApi");
+                let results = await response.json();
+
+                if (results.error && engine !== 'google') {
+                    engine = 'google';
+                    response = await fetch(`https://corsproxy.io/?${encodeURIComponent(`https://serpapi.com/search.json?q=${encodeURIComponent(query)}&api_key=${serpApiKey}&engine=${engine}&gl=br&hl=pt-br`)}`);
+                    results = await response.json();
+                }
+
+                let context = ``;
+
+                if (engine === 'youtube' && (results.video_results || results.shorts_results)) {
+                    context += `### Vídeos Encontrados (YouTube):\n\n`;
+                    let allVideos = results.video_results || [];
+                    allVideos.slice(0, 3).forEach((vid, i) => {
+                        let videoId = vid.video_id || (vid.link && vid.link.match(/(?:v=|\/shorts\/|youtu\.be\/)([^&?]+)/)?.[1]);
+                        if (videoId && i === 0) context += `[YOUTUBE_EMBED]${videoId}[/YOUTUBE_EMBED]\n`;
+                        context += `**${i + 1}. ${vid.title}**\n`;
+                    });
+                    return context;
+                }
+
+                if (engine === 'google_maps' && results.local_results && results.local_results.length > 0) {
+                    context += `### Locais Encontrados (Google Maps):\n\n`;
+                    const mapQuery = encodeURIComponent(`${results.local_results[0].title} ${results.local_results[0].address || ''}`);
+                    context += `[MAPS_EMBED]${mapQuery}[/MAPS_EMBED]\n\n`;
+                    results.local_results.slice(0, 3).forEach((place, i) => {
+                        context += `**${i + 1}. ${place.title}**\n📍 ${place.address || ''}\n\n`;
+                    });
+                    return context;
+                }
+
+                if (results.organic_results?.length > 0) {
+                    context += `### Resultados da Web:\n`;
+                    results.organic_results.slice(0, 3).forEach((r, i) => { context += `**${i + 1}. ${r.title}**\n${r.snippet}\nLer mais\n\n`; });
+                }
+
+                return context || "Sem resultados encontrados na web.";
+            } catch (error) { return `Falha ao aceder à Web no momento. Resposta baseada no conhecimento local.`; }
+        }
+
+        async function fetchAIGroq(promptText) {
+            if (!groqApiKey) return "Chave API Groq não configurada.";
+            try {
+                const res = await fetch(`https://api.groq.com/openai/v1/chat/completions`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${groqApiKey}` },
+                    body: JSON.stringify({
+                        model: currentModelId,
+                        messages: [
+                            {
+                                role: 'system',
+                                content: `Você é o resenIA, o assistente de inteligência artificial definitivo especializado em futebol, análises táticas, dados estatísticos e cobertura histórica da Copa do Mundo da FIFA. Seu tom deve ser o de um analista de desempenho profissional misturado com o carisma de uma mesa de debate esportivo: preciso, informativo, apaixonado por futebol e focado em dados reais.
+
+# DIRETRIZES DE EXTRAÇÃO DE DADOS (MÓDULOS DE RESPOSTA)
+Seu output deve ser dividido estritamente nas 6 seções a seguir. Se algum dado em tempo real não estiver disponível por limitações de corte de conhecimento, utilize a base histórica mais recente ou sinalize com precisão.
+
+## 1. FICHA TÉCNICA E PLACAR
+- Placar Final (e placar ao intervalo entre parênteses).
+- Autores dos gols e os minutos exatos em que foram marcados.
+- Estádio, público pagante (se disponível) e equipe de arbitragem principal.
+- Cartões amarelos e vermelhos (Jogador, tempo e motivo breve).
+
+## 2. ESCALAÇÕES OFICIAIS E DISPOSIÇÃO TÁTICA
+Apresente as escalações em formato de lista ou tabela textual clara:
+- Seleção A (Mandante): Esquema tático inicial (Ex: 4-3-3, 3-5-2).
+  - Goleiro, Defensores, Meio-campistas e Atacantes.
+  - Capitão da equipe sinalizado com (C).
+- Seleção B (Visitante): Esquema tático inicial.
+  - Goleiro, Defensores, Meio-campistas e Atacantes.
+- Banco de Reservas: Lista de suplentes de cada seleção.
+
+## 3. DINÂMICA DE SUBSTITUIÇÕES E ALTERAÇÕES TÁTICAS
+- Linha do tempo das substituições: Quem saiu, quem entrou e o minuto.
+- Análise de impacto: Como a entrada dos reservas alterou o desenho tático ou o ritmo da partida.
+
+## 4. ESTATÍSTICAS DA PARTIDA (COMPARAÇÃO LADO A LADO)
+Crie uma tabela comparativa contendo:
+- Posse de bola (%)
+- Finalizações totais (No gol / Para fora / Bloqueadas)
+- Escanteios e Impedimentos
+- Faltas cometidas e Desarmes
+- Grandes chances criadas e Grandes chances perdidas
+- Passes totais e Precisão dos passes (%)
+- xG (Gols Esperados), se os dados desta edição estiverem disponíveis.
+
+## 5. CRÔNICA DO JOGO E MOMENTOS-CHAVE
+- O Roteiro: Um resumo de 3 parágrafos narrando o desenrolar do jogo (Primeiro tempo, Segundo tempo e Prorrogação/Pênaltis se houver).
+- O Momento Decisivo: O lance, falha tática ou lampejo de genialidade que definiu o resultado.
+- O Cara do Jogo (Man of the Match): Quem foi o melhor jogador em campo e a justificativa técnica para isso.
+
+## 6. IMPACTO NA TABELA E CONTEXTO HISTÓRICO
+- Situação do Grupo/Classificação: Como esse resultado afetou a tabela de pontos, quem se classificou ou quem foi eliminado.
+- Cruzamentos: Quem é o próximo adversário na fase seguinte (se aplicável).
+- Tabus e Recordes: Algum tabu histórico foi quebrado? Algum jogador alcançou uma marca histórica (Ex: mais gols em Copas, jogador mais jovem)?
+
+# FORMATAÇÃO DA RESPOSTA
+- Use Markdown rigoroso. 
+- Utilize tabelas para a seção de Estatísticas.
+- Use negrito para destacar nomes de jogadores e momentos críticos.
+- Caso o jogo solicitado ainda não tenha acontecido (seja um jogo futuro na data da consulta), mude o escopo automaticamente para: Análise Pré-Jogo, Histórico do Confronto Direto em Copas, Escalações Prováveis, Desfalques por Lesão/Suspensão e Projeção Tática de como os treinadores devem postar os times.`
+                            },
+                            { role: 'user', content: promptText }
+                        ]
+                    })
+                });
+                if (!res.ok) throw new Error("Erro na API da Groq");
+                const data = await res.json();
+                return data.choices[0].message.content;
+            } catch (error) {
+                console.error("Groq API Error:", error);
+                return "Opa, deu um impedimento na minha conexão cerebral com a IA! Tenta de novo, torcedor.";
+            }
+        }
+
+        function handleKeyPress(e) { if (e.key === 'Enter') enviarMensagem(); }
+
+        async function enviarMensagem() {
+            const text = inputField.value.trim();
+            if (!text) return;
+
+            // Oculta saudação central da IA ao enviar
+            const initialGreeting = document.getElementById('initial-greeting');
+            if (initialGreeting) initialGreeting.style.opacity = '0';
+            setTimeout(() => { if (initialGreeting) initialGreeting.style.display = 'none'; }, 300);
+
+            appendMessage('user', text);
+            inputField.value = '';
+            toggleSendIcon();
+
+            const typingId = showTyping();
+            setTimeout(async () => {
+                await processarRespostaIA(text);
+                removeTyping(typingId);
+            }, 500);
+        }
+
+        function appendMessage(sender, text) {
+            const div = document.createElement('div');
+            div.className = `message ${sender === 'user' ? 'msg-user' : 'msg-ai'}`;
+
+            let formattedText = text;
+
+            if (sender === 'ai' && typeof marked !== 'undefined') {
+                formattedText = marked.parse(text);
+            } else {
+                formattedText = text
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                    .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" style="color: #d4b561; text-decoration: none; font-weight: bold; margin-top: 8px; display: inline-block;">$1</a>')
+                    .replace(/\n/g, '<br>');
+            }
+
+            // Insere os embeddings independentemente do parser utilizado
+            formattedText = formattedText
+                .replace(/\[YOUTUBE_EMBED\](.*?)\[\/YOUTUBE_EMBED\]/g, '<div class="yt-container-wrapper"><iframe src="https://www.youtube.com/embed/$1?origin=' + window.location.origin + '" allowfullscreen></iframe></div>')
+                .replace(/\[MAPS_EMBED\](.*?)\[\/MAPS_EMBED\]/g, '<div class="maps-container-wrapper"><iframe scrolling="no" src="https://maps.google.com/maps?q=$1&t=&z=15&ie=UTF8&iwloc=&output=embed"></iframe></div>');
+
+            if (sender === 'ai') div.innerHTML = `<strong>ResenIA</strong><br>${formattedText}`;
+            else div.innerHTML = formattedText;
+            chatBox.appendChild(div);
+
+            setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 100);
+            return div;
+        }
+
+        function showTyping() {
+            const id = 'typing-' + Date.now();
+            const div = document.createElement('div');
+            div.id = id; div.className = 'message msg-ai';
+            div.innerHTML = `<strong>ResenIA</strong><br><div class="typing-indicator"><span></span><span></span><span></span></div>`;
+            chatBox.appendChild(div);
+            chatBox.scrollTop = chatBox.scrollHeight;
+            return id;
+        }
+
+        function removeTyping(id) { const el = document.getElementById(id); if (el) el.remove(); }
+
+        async function processarRespostaIA(inputText) {
+            const text = inputText.toLowerCase();
+            let resposta = "";
+            let showWidget = false, showGroupsWidget = false, showLineupsWidget = false, showMatchListWidget = false, initYouTube = false;
+
+            const allowedKeywords = ['copa', 'mundo', 'jogo', 'jogos', 'placar', 'grupo', 'escalação', 'lineup', 'assistir', 'cazé', 'cazetv', 'transmissão', 'futebol', 'gol', 'seleção', 'fifa', 'calendário', 'agenda', 'partida', 'tabela', 'classificação', 'titulares', 'time', 'youtube', 'onde passar', 'quanto tá', 'mostrar', 'pesquisar'];
+            let isWorldCupRelated = allowedKeywords.some(kw => text.includes(kw));
+
+            if (!isWorldCupRelated && outrosJogosList.length > 0) {
+                isWorldCupRelated = outrosJogosList.some(g => {
+                    const homeComp = g.competitions[0].competitors.find(c => c.homeAway === 'home');
+                    const awayComp = g.competitions[0].competitors.find(c => c.homeAway === 'away');
+                    return (homeComp && text.includes(homeComp.team.displayName.toLowerCase())) ||
+                        (awayComp && text.includes(awayComp.team.displayName.toLowerCase()));
+                });
+            }
+
+            if (!isWorldCupRelated) {
+                appendMessage('ai', "Desculpe, torcedor! Meu banco de dados e funções são **exclusivos para a Copa do Mundo 2026**. 🏆 Por favor, me faça perguntas sobre os jogos, seleções, grupos, ou onde assistir na CazéTV!");
+                return;
+            }
+
+            if (text.includes('todos os jogos') || text.includes('calendário') || text.includes('agenda') || text.includes('lista de jogos') || text.includes('jogos de hoje') || text.includes('placares') || text.includes('partidas')) {
+                resposta = `Aqui está o painel completo com **todos os jogos** puxados da API da ESPN com seus respectivos placares, transmissões e datas!\n\n💡 **Dica:** Você tem total liberdade para escolher: clique em qualquer partida da lista para eu focar nela e atualizar todos os painéis.`;
+                showMatchListWidget = true;
+            }
+            else if (text.includes('selecionei o jogo')) {
+                resposta = `Pronto! Mudei o foco para o jogo **${timeCasa.nome} x ${timeFora.nome}**. O que você quer ver agora? O placar, as escalações ou a transmissão?`;
+            }
+            else if (text.includes('placar') || text.includes('jogo atual') || text.includes('quanto tá') || text.includes('mostrar jogo')) {
+                const placarInfo = `${timeCasa.nome} ${document.getElementById('score-home').innerText} x ${document.getElementById('score-away').innerText} ${timeFora.nome}`;
+                resposta = `A leitura oficial da API para o jogo selecionado indica: **${placarInfo}**.\nAcabei de puxar a interface gráfica oficial pra você acompanhar:`;
+                showWidget = true;
+            }
+            else if (text.includes('assistir') || text.includes('transmissão') || text.includes('cazé') || text.includes('cazetv') || text.includes('onde passar')) {
+                const webResults = await fetchWebSearchResults(`CazéTV ao vivo ${timeCasa.nome} x ${timeFora.nome} Copa do Mundo youtube`);
+                resposta = `Preparando as informações de transmissão para **${timeCasa.nome} x ${timeFora.nome}**.\n📺 **Transmissão Oficial (ESPN API):** ${currentBroadcast}.\n\nFiz uma busca automática no YouTube pelos links da **CazéTV** para esse jogo via SerpApi:\n\n${webResults}\n\nO player também foi inicializado abaixo (fallback contínuo). Solta o play:\n
+                <div class="yt-container-wrapper"><div id="yt-player-container"></div></div>`;
+                initYouTube = true;
+            }
+            else if (text.includes('grupo') || text.includes('chaveamento') || text.includes('tabela') || text.includes('classificação')) {
+                resposta = `A Copa de 2026 terá 48 seleções divididas em 12 grupos. Construí essas tabelas detalhadas de classificação pra você visualizar o chaveamento atualizado!`;
+                showGroupsWidget = true;
+            }
+            else if (text.includes('escalação') || text.includes('lineup') || text.includes('time') || text.includes('titulares') || text.includes('quem joga')) {
+                resposta = `Aqui estão as escalações para **${timeCasa.nome} x ${timeFora.nome}**, extraídas da API da ESPN!`;
+                showLineupsWidget = true;
+            }
+            else if (text.includes('gol do ' + timeCasa.nome.toLowerCase()) || (text.includes('gol') && text.includes(timeCasa.nome.toLowerCase()))) {
+                resposta = `**GOOOOOOOOOOOL!** 🔥 Bola na rede para **${timeCasa.nome}**! Já atualizei a interface. Pede pra eu mostrar o "placar" pra você ver o painel!`;
+            }
+            else if (text.includes('gol do ' + timeFora.nome.toLowerCase()) || (text.includes('gol') && text.includes(timeFora.nome.toLowerCase()))) {
+                resposta = `**GOOOL!** ⚽ É caixa! Telemetria da ESPN detectou gol para **${timeFora.nome}**. Acionei os gráficos pra você.`;
+            }
+            else {
+                const query = inputText + (inputText.includes("copa") ? "" : " Copa do Mundo 2026");
+                const webResults = await fetchWebSearchResults(query);
+                const promptIA = `O torcedor perguntou: "${inputText}"\n\nDados da Web (SerpApi):\n${webResults}\n\nResponda usando APENAS os dados acima de forma natural. Se os dados da web contiverem tags de mídia como [YOUTUBE_EMBED]...[/YOUTUBE_EMBED] ou [MAPS_EMBED]...[/MAPS_EMBED], é ESTRITAMENTE OBRIGATÓRIO que as mantenha exatamente na sua resposta para a interface conseguir renderizar os widgets.`;
+                resposta = await fetchAIGroq(promptIA);
+            }
+
+            const aiMessageElement = appendMessage('ai', resposta);
+
+            if (showWidget) { placarWidget.style.display = 'flex'; aiMessageElement.appendChild(placarWidget); chatBox.scrollTop = chatBox.scrollHeight; }
+            if (showMatchListWidget) { matchListWidget.style.display = 'block'; aiMessageElement.appendChild(matchListWidget); chatBox.scrollTop = chatBox.scrollHeight; }
+            if (showGroupsWidget) { groupsWidget.style.display = 'block'; aiMessageElement.appendChild(groupsWidget); chatBox.scrollTop = chatBox.scrollHeight; }
+            if (showLineupsWidget) { lineupsWidget.style.display = 'block'; aiMessageElement.appendChild(lineupsWidget); chatBox.scrollTop = chatBox.scrollHeight; }
+
+            if (initYouTube) {
+                setTimeout(() => {
+                    if (isYouTubeReady) {
+                        playerYouTube = new YT.Player(aiMessageElement.querySelector('#yt-player-container'), {
+                            height: '100%', width: '100%', videoId: 'jfKfPfyJRdk',
+                            playerVars: { 'autoplay': 0, 'controls': 1, 'rel': 0, 'modestbranding': 1, 'origin': window.location.origin }
+                        });
+                    } else {
+                        aiMessageElement.querySelector('#yt-player-container').innerHTML = "<p style='color:white; padding:20px; text-align:center;'>A API do YouTube ainda está carregando...</p>";
+                    }
+                }, 100);
+            }
+        }
+    </script>
+</body>
+
+</html>
