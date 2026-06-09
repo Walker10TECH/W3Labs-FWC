@@ -1417,6 +1417,9 @@
                 <span class="api-status" id="system-status">CONECTANDO...</span>
             </div>
             <div style="display: none;"><span id="game-clock">00:00</span></div>
+            <div class="yt-container-wrapper" style="margin: 15px; width: calc(100% - 30px);">
+                <div id="yt-player-container"></div>
+            </div>
             <div class="feed-content" id="api-feed">
                 <!-- Itens do feed preenchidos via JS -->
             </div>
@@ -2250,8 +2253,7 @@ Crie uma tabela comparativa contendo:
             }
             else if (text.includes('assistir') || text.includes('transmissão') || text.includes('cazé') || text.includes('cazetv') || text.includes('onde passar')) {
                 const webResults = await fetchWebSearchResults(`CazéTV ao vivo ${timeCasa.nome} x ${timeFora.nome} Copa do Mundo youtube`);
-                resposta = `Preparando as informações de transmissão para **${timeCasa.nome} x ${timeFora.nome}**.\n📺 **Transmissão Oficial (ESPN API):** ${currentBroadcast}.\n\nFiz uma busca automática no YouTube pelos links da **CazéTV** para esse jogo via SerpApi:\n\n${webResults}\n\nO player também foi inicializado abaixo (fallback contínuo). Solta o play:\n
-                <div class="yt-container-wrapper"><div id="yt-player-container"></div></div>`;
+                resposta = `Preparando as informações de transmissão para **${timeCasa.nome} x ${timeFora.nome}**.\n📺 **Transmissão Oficial (ESPN API):** ${currentBroadcast}.\n\nFiz uma busca automática no YouTube pelos links da **CazéTV** para esse jogo via SerpApi:\n\n${webResults}\n\nO player fixo na barra lateral foi inicializado! Solta o play.`;
                 initYouTube = true;
             }
             else if (text.includes('grupo') || text.includes('chaveamento') || text.includes('tabela') || text.includes('classificação')) {
@@ -2285,12 +2287,12 @@ Crie uma tabela comparativa contendo:
             if (initYouTube) {
                 setTimeout(() => {
                     if (isYouTubeReady) {
-                        playerYouTube = new YT.Player(aiMessageElement.querySelector('#yt-player-container'), {
+                        playerYouTube = new YT.Player(document.getElementById('yt-player-container'), {
                             height: '100%', width: '100%', videoId: 'jfKfPfyJRdk',
                             playerVars: { 'autoplay': 0, 'controls': 1, 'rel': 0, 'modestbranding': 1, 'origin': window.location.origin }
                         });
                     } else {
-                        aiMessageElement.querySelector('#yt-player-container').innerHTML = "<p style='color:white; padding:20px; text-align:center;'>A API do YouTube ainda está carregando...</p>";
+                        document.getElementById('yt-player-container').innerHTML = "<p style='color:white; padding:20px; text-align:center;'>A API do YouTube ainda está carregando...</p>";
                     }
                 }, 100);
             }
