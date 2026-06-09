@@ -12,6 +12,8 @@
     <script src="https://www.youtube.com/iframe_api"></script>
     <!-- MARKDOWN PARSER -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- VARIÁVEIS DE AMBIENTE -->
+    <script src="env.js"></script>
     <style>
         /* ==========================================================================
            FONTES DA COPA DO MUNDO 2026 E GOOGLE (GEMINI)
@@ -1523,8 +1525,8 @@
         let currentGameId = null;
         let currentBroadcast = "A Definir";
 
-        let serpApiKey = (typeof process !== 'undefined' && process.env && process.env.SERP_API_KEY) || '';
-        let groqApiKey = (typeof process !== 'undefined' && process.env && process.env.GROQ_API_KEY) || '';
+        let serpApiKey = (typeof window.ENV !== 'undefined' && window.ENV.SERP_API_KEY) || '';
+        let groqApiKey = (typeof window.ENV !== 'undefined' && window.ENV.GROQ_API_KEY) || '';
         let currentModelId = 'openai/gpt-oss-120b';
 
         let isAnimatingEvent = false;
