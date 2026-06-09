@@ -1,2 +1,5 @@
 # Ignorar ficheiros de variáveis de ambiente
+.env
+.env.local
+.env.*
 env.js
