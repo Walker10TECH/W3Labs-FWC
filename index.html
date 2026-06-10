@@ -2034,7 +2034,7 @@
             let endpoint = `https://serpapi.com/search.json?api_key=${serpApiKey}&engine=${engine}&gl=br&hl=pt-br`;
 
             if (engine === 'google_maps') endpoint += `&q=${encodeURIComponent(query)}&type=search`;
-            else if (engine === 'youtube') endpoint += `&search_query=${encodeURIComponent(query)}`;
+            else if (engine === 'youtube') endpoint += `&search_query=${encodeURIComponent(query + ' https://www.youtube.com/@CazeTV/streams')}`; // Filtro exclusivo de canal
             else endpoint += `&q=${encodeURIComponent(query)}`;
 
             try {
@@ -2053,10 +2053,15 @@
                 if (engine === 'youtube' && (results.video_results || results.shorts_results)) {
                     context += `### Vídeos Encontrados (YouTube):\n\n`;
                     let allVideos = results.video_results || [];
-                    allVideos.slice(0, 3).forEach((vid, i) => {
+                    
+                    // Filtro programático estrito para bloquear links paralelos
+                    let officialVideos = allVideos.filter(vid => vid.channel && vid.channel.name && vid.channel.name.toLowerCase().includes('caze'));
+                    let videosToRender = officialVideos.length > 0 ? officialVideos : allVideos;
+
+                    videosToRender.slice(0, 3).forEach((vid, i) => {
                         let videoId = vid.video_id || (vid.link && vid.link.match(/(?:v=|\/shorts\/|youtu\.be\/)([^&?]+)/)?.[1]);
                         if (videoId && i === 0) context += `[YOUTUBE_EMBED]${videoId}[/YOUTUBE_EMBED]\n`;
-                        context += `**${i + 1}. ${vid.title}**\n`;
+                        context += `**${i + 1}. ${vid.title}** (Canal: ${vid.channel?.name || 'Desconhecido'})\n`;
                     });
                     return context;
                 }
@@ -2221,6 +2226,7 @@ Crie uma tabela comparativa contendo:
             const text = inputText.toLowerCase();
             let resposta = "";
             let showWidget = false, showGroupsWidget = false, showLineupsWidget = false, showMatchListWidget = false, initYouTube = false;
+            let dynamicVideoId = ''; 
 
             const allowedKeywords = ['copa', 'mundo', 'jogo', 'jogos', 'placar', 'grupo', 'escalação', 'lineup', 'assistir', 'cazé', 'cazetv', 'transmissão', 'futebol', 'gol', 'seleção', 'fifa', 'calendário', 'agenda', 'partida', 'tabela', 'classificação', 'titulares', 'time', 'youtube', 'onde passar', 'quanto tá', 'mostrar', 'pesquisar'];
             let isWorldCupRelated = allowedKeywords.some(kw => text.includes(kw));
@@ -2253,6 +2259,13 @@ Crie uma tabela comparativa contendo:
             }
             else if (text.includes('assistir') || text.includes('transmissão') || text.includes('cazé') || text.includes('cazetv') || text.includes('onde passar')) {
                 const webResults = await fetchWebSearchResults(`CazéTV ao vivo ${timeCasa.nome} x ${timeFora.nome} Copa do Mundo youtube`);
+                
+                // Extrai o ID do vídeo retornado pela busca usando Regex
+                const ytMatch = webResults.match(/\[YOUTUBE_EMBED\](.*?)\[\/YOUTUBE_EMBED\]/);
+                if (ytMatch && ytMatch[1]) {
+                    dynamicVideoId = ytMatch[1];
+                }
+                
                 resposta = `Preparando as informações de transmissão para **${timeCasa.nome} x ${timeFora.nome}**.\n📺 **Transmissão Oficial (ESPN API):** ${currentBroadcast}.\n\nFiz uma busca automática no YouTube pelos links da **CazéTV** para esse jogo via SerpApi:\n\n${webResults}\n\nO player fixo na barra lateral foi inicializado! Solta o play.`;
                 initYouTube = true;
             }
@@ -2287,12 +2300,16 @@ Crie uma tabela comparativa contendo:
             if (initYouTube) {
                 setTimeout(() => {
                     if (isYouTubeReady) {
-                        playerYouTube = new YT.Player(document.getElementById('yt-player-container'), {
-                            height: '100%', width: '100%', videoId: 'jfKfPfyJRdk',
-                            playerVars: { 'autoplay': 0, 'controls': 1, 'rel': 0, 'modestbranding': 1, 'origin': window.location.origin }
-                        });
+                        if (dynamicVideoId) {
+                            playerYouTube = new YT.Player(document.getElementById('yt-player-container'), {
+                                height: '100%', width: '100%', videoId: dynamicVideoId,
+                                playerVars: { 'autoplay': 0, 'controls': 1, 'rel': 0, 'modestbranding': 1, 'origin': window.location.origin }
+                            });
+                        } else {
+                            document.getElementById('yt-player-container').innerHTML = "<p style='color:white; padding:20px; text-align:center;'>Nenhuma transmissão ativa encontrada.<br><span style='color:#a8a8a8; font-size:13px; display:inline-block; margin-top:8px;'>Tente novamente mais tarde.</span></p>";
+                        }
                     } else {
-                        document.getElementById('yt-player-container').innerHTML = "<p style='color:white; padding:20px; text-align:center;'>A API do YouTube ainda está carregando...</p>";
+                        document.getElementById('yt-player-container').innerHTML = "<p style='color:white; padding:20px; text-align:center;'>A API do YouTube ainda está carregando...<br><span style='color:#a8a8a8; font-size:13px; display:inline-block; margin-top:8px;'>Transmissão agendada em breve.</span></p>";
                     }
                 }, 100);
             }
