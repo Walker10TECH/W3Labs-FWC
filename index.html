@@ -1411,36 +1411,72 @@
             if (engine === 'google_maps') endpoint += `&q=${encodeURIComponent(query)}&type=search`;
             else if (engine === 'youtube') {
                 let yQuery = query;
-                if (qLower.includes('ao vivo') || qLower.includes('cazé') || qLower.includes('cazetv') || qLower.includes('transmissão')) {
-                    yQuery += ' https://www.youtube.com/@CazeTV/streams';
+                if (qLower.includes('cazé') || qLower.includes('cazetv')) {
+                    yQuery += ' CazéTV';
+                } else if (qLower.includes('getv') || qLower.includes('globo') || qLower.includes('sportv')) {
+                    yQuery += ' ge globo sportv';
                 }
                 endpoint += `&search_query=${encodeURIComponent(yQuery)}`;
             }
             else endpoint += `&q=${encodeURIComponent(query)}`;
 
+            // Sistema Multi-Proxy para evitar falhas de CORS e indisponibilidades
+            const fetchWithProxy = async (targetUrl) => {
+                const proxies = [
+                    `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`,
+                    `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`,
+                    `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`
+                ];
+
+                for (let proxy of proxies) {
+                    try {
+                        let res = await fetch(proxy);
+                        if (res.ok) return await res.json();
+                    } catch (e) {
+                        continue; // Se o proxy falhar, pula pro próximo da lista
+                    }
+                }
+
+                // Tenta o fallback de segurança empacotado como última esperança
+                try {
+                    let res2 = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`);
+                    if (res2.ok) {
+                        let data = await res2.json();
+                        if (data.contents) return JSON.parse(data.contents);
+                    }
+                } catch (e) {}
+
+                throw new Error("Falha em todos os proxies.");
+            };
+
             try {
-                let response = await fetch(`https://corsproxy.io/?${encodeURIComponent(endpoint)}`);
-                if (!response.ok) throw new Error("Erro no proxy SerpApi");
-                let results = await response.json();
+                let results = await fetchWithProxy(endpoint);
 
                 if (results.error && engine !== 'google') {
                     engine = 'google';
-                    response = await fetch(`https://corsproxy.io/?${encodeURIComponent(`https://serpapi.com/search.json?q=${encodeURIComponent(query)}&api_key=${serpApiKey}&engine=${engine}&gl=br&hl=pt-br`)}`);
-                    results = await response.json();
+                    const fallbackEndpoint = `https://serpapi.com/search.json?q=${encodeURIComponent(query)}&api_key=${serpApiKey}&engine=${engine}&gl=br&hl=pt-br`;
+                    results = await fetchWithProxy(fallbackEndpoint);
                 }
 
                 let context = ``;
-                if (engine === 'youtube' && (results.video_results || results.shorts_results)) {
+                
+                // Trata resultados de vídeos independentemente do motor utilizado (YouTube ou Google)
+                let videos = results.video_results || results.inline_videos || results.shorts_results;
+                if (videos && videos.length > 0) {
                     context += `### Vídeos Encontrados (YouTube):\n\n`;
-                    let allVideos = results.video_results || [];
-                    let officialVideos = allVideos.filter(vid => vid.channel && vid.channel.name && vid.channel.name.toLowerCase().includes('caze'));
-                    let videosToRender = officialVideos.length > 0 ? officialVideos : allVideos;
+                    let officialVideos = videos.filter(vid => vid.channel && vid.channel.name && vid.channel.name.toLowerCase().includes('caze'));
+                    let videosToRender = officialVideos.length > 0 ? officialVideos : videos;
                     videosToRender.slice(0, 3).forEach((vid, i) => {
                         let videoId = vid.video_id || (vid.link && vid.link.match(/(?:v=|\/shorts\/|youtu\.be\/)([^&?]+)/)?.[1]);
                         if (videoId && i === 0) context += `[YOUTUBE_EMBED]${videoId}[/YOUTUBE_EMBED]\n`;
-                        context += `**${i + 1}. ${vid.title}** (Canal: ${vid.channel?.name || 'Desconhecido'})\n`;
+                    
+                        let thumbUrl = videoId ? `https://img.youtube.com/vi/${videoId}/mqdefault.jpg` : (vid.thumbnail?.static || vid.thumbnail);
+                        let thumbImg = thumbUrl ? `<br><a href="${vid.link || 'https://www.youtube.com/watch?v=' + videoId}" target="_blank"><img src="${thumbUrl}" style="width: 180px; border-radius: 8px; margin-top: 8px; margin-bottom: 8px; border: 1px solid rgba(255,255,255,0.1); object-fit: cover; box-shadow: 0 4px 10px rgba(0,0,0,0.5);"></a>` : '';
+                        context += `**${i + 1}. ${vid.title}** (Canal: ${vid.channel?.name || 'Desconhecido'})${thumbImg}\n\n`;
                     });
-                    return context;
+                    
+                    // Retorna só os vídeos se a busca foi exclusiva para o YouTube
+                    if (engine === 'youtube') return context;
                 }
                 if (engine === 'google_maps' && results.local_results && results.local_results.length > 0) {
                     context += `### Locais Encontrados (Google Maps):\n\n`;
