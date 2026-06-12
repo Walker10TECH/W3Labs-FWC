@@ -1746,12 +1746,24 @@
     <!-- TEMPLATES DOS WIDGETS OCULTOS (SERÃO CLONADOS PARA DENTRO DO CHAT) -->
 
     <template id="match-list-widget-template">
-        <div class="match-list-widget widget-container">
+        <div class="match-list-widget widget-container" data-status="all">
             <div class="match-list-header">
                 CALENDÁRIO & PLACARES
-                <input type="text" class="search-match-input" placeholder="🔍 Filtrar por seleção ou data..."
-                    oninput="filtrarJogos(this)"
-                    style="display: block; width: 100%; margin-top: 10px; padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.4); color: white; font-size: 12px; outline: none; font-family: var(--font-main);">
+                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                    <input type="text" class="search-match-input" placeholder="🔍 Filtrar por seleção..."
+                        oninput="filtrarJogos(this)"
+                        style="flex: 1; padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.4); color: white; font-size: 12px; outline: none; font-family: var(--font-main);">
+                    <input type="date" class="search-match-date" onchange="filtrarJogos(this)" title="Filtrar por data exata"
+                        style="width: 130px; padding: 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.4); color: white; font-size: 12px; outline: none; font-family: var(--font-main); color-scheme: dark;">
+                    <button onclick="limparFiltrosMatchList(this)" title="Limpar Filtros"
+                        style="padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); background: rgba(239,68,68,0.2); color: #ff4d4d; cursor: pointer; font-size: 12px; transition: 0.2s;">✖</button>
+                </div>
+                <div class="filter-buttons" style="display: flex; gap: 5px; margin-top: 10px;">
+                    <button onclick="filtrarPorStatus(this, 'all')" style="flex: 1; padding: 6px; background: rgba(255,255,255,0.2); border: none; color: white; border-radius: 4px; cursor: pointer; font-size: 11px; font-family: var(--font-main); transition: 0.2s;">Todos</button>
+                    <button onclick="filtrarPorStatus(this, 'past')" style="flex: 1; padding: 6px; background: rgba(255,255,255,0.05); border: none; color: white; border-radius: 4px; cursor: pointer; font-size: 11px; font-family: var(--font-main); transition: 0.2s;">Anteriores</button>
+                    <button onclick="filtrarPorStatus(this, 'live')" style="flex: 1; padding: 6px; background: rgba(255,255,255,0.05); border: none; color: white; border-radius: 4px; cursor: pointer; font-size: 11px; font-family: var(--font-main); transition: 0.2s;">Ao Vivo</button>
+                    <button onclick="filtrarPorStatus(this, 'future')" style="flex: 1; padding: 6px; background: rgba(255,255,255,0.05); border: none; color: white; border-radius: 4px; cursor: pointer; font-size: 11px; font-family: var(--font-main); transition: 0.2s;">Futuros</button>
+                </div>
             </div>
             <div class="match-list-container"></div>
         </div>
@@ -1764,7 +1776,7 @@
                     <!-- TIME ESQUERDO (CASA) -->
                     <div class="team-panel team-left">
                         <img class="flag home-logo" src="" alt="Home">
-                        <div class="dot left"></div>
+                        <div class="dot left home-dot"></div>
                         <div class="team-name home-abbrev">CASA</div>
                     </div>
                     <!-- PLACAR ESQUERDO -->
@@ -1781,7 +1793,7 @@
                     <!-- TIME DIREITO (FORA) -->
                     <div class="team-panel team-right">
                         <div class="team-name away-abbrev">FORA</div>
-                        <div class="dot right"></div>
+                        <div class="dot right away-dot"></div>
                         <img class="flag away-logo" src="" alt="Away">
                     </div>
                     <!-- TEMPO DE JOGO -->
@@ -2044,7 +2056,14 @@
         function renderizarListaDeJogos(jogos, containerElement = activeMatchListContainer) {
             if (!containerElement) return;
             containerElement.innerHTML = '';
-            if (!jogos || jogos.length === 0) return;
+            if (!jogos || jogos.length === 0) {
+                const widget = containerElement.closest('.match-list-widget');
+                if (widget) {
+                    const searchInput = widget.querySelector('.search-match-input');
+                    if (searchInput) filtrarJogos(searchInput);
+                }
+                return;
+            }
 
             jogos.forEach(game => {
                 const comp = game.competitions[0];
@@ -2076,9 +2095,22 @@
                     scoreText = `${home.score} - ${away.score}`;
                 }
 
+                const dYear = dateObj.getFullYear();
+                const dMonth = String(dateObj.getMonth() + 1).padStart(2, '0');
+                const dDay = String(dateObj.getDate()).padStart(2, '0');
+                const dataDateValue = `${dYear}-${dMonth}-${dDay}`;
+
                 const item = document.createElement('div');
                 item.className = `match-item ${game.id === currentGameId ? 'selected' : ''}`;
                 item.id = `match-${game.id}`;
+                item.dataset.date = dataDateValue;
+                
+                const homeName = home.team.displayName || home.team.name || '';
+                const awayName = away.team.displayName || away.team.name || '';
+                const homeAbbrev = home.team.abbreviation || '';
+                const awayAbbrev = away.team.abbreviation || '';
+                item.dataset.search = `${homeName} ${awayName} ${homeAbbrev} ${awayAbbrev}`.toLowerCase();
+                
                 item.onclick = () => selecionarJogo(game.id);
 
                 item.innerHTML = `
@@ -2097,39 +2129,143 @@
                 `;
                 containerElement.appendChild(item);
             });
+
+            // Após renderizar a lista, reaplica o filtro atual (texto e botões)
+            const widget = containerElement.closest('.match-list-widget');
+            if (widget) {
+                const searchInput = widget.querySelector('.search-match-input');
+                if (searchInput) filtrarJogos(searchInput);
+            }
         }
 
         function filtrarJogos(inputElement) {
-            const query = inputElement.value.toLowerCase();
             const container = inputElement.closest('.match-list-widget');
             if (!container) return;
+            
+            const searchInput = container.querySelector('.search-match-input');
+            const dateInput = container.querySelector('.search-match-date');
+            
+            const query = searchInput ? searchInput.value.toLowerCase() : '';
+            const dateQuery = dateInput ? dateInput.value : '';
+
+            // Fetch ESPN API se a data mudou
+            const lastFetchedDate = container.dataset.fetchedDate || '';
+            if (dateInput && lastFetchedDate !== dateQuery) {
+                container.dataset.fetchedDate = dateQuery;
+                const listContainer = container.querySelector('.match-list-container');
+                if (listContainer) listContainer.innerHTML = '<div style="text-align:center; padding:20px; color:#d4b561; font-family:var(--font-expanded); font-size:13px; animation: pulse 1.5s infinite;">BUSCANDO NA ESPN...</div>';
+                
+                fetchRealESPNData(dateQuery !== '' ? dateQuery : null);
+                return;
+            }
+
+            const currentStatus = container.dataset.status || 'all';
             const items = container.querySelectorAll('.match-item');
+            
+            let visibleCount = 0;
+
             items.forEach(item => {
-                const textContent = item.innerText.toLowerCase();
-                item.style.display = textContent.includes(query) ? 'flex' : 'none';
+                const textContent = (item.textContent + " " + (item.dataset.search || "")).toLowerCase();
+                const matchesText = textContent.includes(query);
+                
+                const isLive = item.querySelector('.status-live') !== null;
+                const isPast = item.querySelector('.status-finished') !== null;
+                const isFuture = item.querySelector('.status-scheduled') !== null;
+
+                let matchesStatus = false;
+                if (currentStatus === 'all') matchesStatus = true;
+                else if (currentStatus === 'live' && isLive) matchesStatus = true;
+                else if (currentStatus === 'past' && isPast) matchesStatus = true;
+                else if (currentStatus === 'future' && isFuture) matchesStatus = true;
+
+                if (matchesText && matchesStatus) {
+                    item.style.display = 'flex';
+                    visibleCount++;
+                } else {
+                    item.style.display = 'none';
+                }
             });
+
+            const listContainer = container.querySelector('.match-list-container');
+            if (!listContainer) return;
+            let emptyMsg = listContainer.querySelector('.empty-filter-msg');
+            if (visibleCount === 0) {
+                if (!emptyMsg) {
+                    emptyMsg = document.createElement('div');
+                    emptyMsg.className = 'empty-filter-msg';
+                    emptyMsg.style.cssText = 'text-align: center; padding: 20px; color: #a8a8a8; font-size: 13px; font-style: italic;';
+                    emptyMsg.innerText = 'Nenhum jogo encontrado para este filtro.';
+                    listContainer.appendChild(emptyMsg);
+                }
+                emptyMsg.style.display = 'block';
+            } else if (emptyMsg) {
+                emptyMsg.style.display = 'none';
+            }
         }
 
-        async function fetchRealESPNData() {
+        function filtrarPorStatus(btnElement, status) {
+            const container = btnElement.closest('.match-list-widget');
+            if (!container) return;
+            const buttons = container.querySelectorAll('.filter-buttons button');
+            buttons.forEach(btn => btn.style.background = 'rgba(255,255,255,0.05)');
+            btnElement.style.background = 'rgba(255,255,255,0.2)';
+            container.dataset.status = status;
+            const searchInput = container.querySelector('.search-match-input');
+            if (searchInput) filtrarJogos(searchInput);
+        }
+
+        function limparFiltrosMatchList(btnElement) {
+            const container = btnElement.closest('.match-list-widget');
+            if (!container) return;
+            const searchInput = container.querySelector('.search-match-input');
+            const dateInput = container.querySelector('.search-match-date');
+            if (searchInput) searchInput.value = '';
+            if (dateInput) dateInput.value = '';
+            const btnTodos = container.querySelector('.filter-buttons button:first-child');
+            if (btnTodos) filtrarPorStatus(btnTodos, 'all');
+        }
+
+        async function fetchRealESPNData(dateQuery = null) {
             try {
-                const url = 'https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard?limit=200';
+                let url = 'https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard?limit=200';
+                if (dateQuery) {
+                    url += '&dates=' + dateQuery.replace(/-/g, '');
+                }
+
                 const res = await fetch(url);
                 const data = await res.json();
 
                 if (data && data.events && data.events.length > 0) {
                     outrosJogosList = data.events;
-                    if (!currentGameId) selecionarJogo(data.events[0].id, false);
-                    else selecionarJogo(currentGameId, false);
+                    if (!currentGameId || !outrosJogosList.find(g => g.id === currentGameId)) {
+                        selecionarJogo(data.events[0].id, false);
+                    } else {
+                        selecionarJogo(currentGameId, false);
+                    }
                     if (activeMatchListContainer) renderizarListaDeJogos(data.events, activeMatchListContainer);
+                } else {
+                    if (dateQuery !== null) {
+                        outrosJogosList = [];
+                        if (activeMatchListContainer) renderizarListaDeJogos([], activeMatchListContainer);
+                    } else {
+                        outrosJogosList = gerarMockEventos();
+                        if (activeMatchListContainer) renderizarListaDeJogos(outrosJogosList, activeMatchListContainer);
+                        if (!currentGameId || !outrosJogosList.find(g => g.id === currentGameId)) {
+                            selecionarJogo(outrosJogosList[0].id, false);
+                        }
+                    }
+                }
+            } catch (error) {
+                if (dateQuery !== null) {
+                    outrosJogosList = [];
+                    if (activeMatchListContainer) renderizarListaDeJogos([], activeMatchListContainer);
                 } else {
                     outrosJogosList = gerarMockEventos();
                     if (activeMatchListContainer) renderizarListaDeJogos(outrosJogosList, activeMatchListContainer);
-                    if (!currentGameId) selecionarJogo(outrosJogosList[0].id, false);
+                    if (!currentGameId || !outrosJogosList.find(g => g.id === currentGameId)) {
+                        selecionarJogo(outrosJogosList[0].id, false);
+                    }
                 }
-            } catch (error) {
-                outrosJogosList = gerarMockEventos();
-                if (activeMatchListContainer) renderizarListaDeJogos(outrosJogosList, activeMatchListContainer);
-                if (!currentGameId) selecionarJogo(outrosJogosList[0].id, false);
             }
         }
 
@@ -2183,10 +2319,18 @@
                 document.querySelectorAll('.home-logo').forEach(el => el.src = timeCasa.logo);
                 document.querySelectorAll('.home-abbrev').forEach(el => el.innerText = timeCasa.sigla);
                 document.querySelectorAll('.score-home').forEach(el => el.innerText = home.score || "0");
+                document.querySelectorAll('.home-dot').forEach(el => {
+                    el.style.backgroundColor = timeCasa.color;
+                    el.style.borderColor = timeCasa.alternateColor;
+                });
 
                 document.querySelectorAll('.away-logo').forEach(el => el.src = timeFora.logo);
                 document.querySelectorAll('.away-abbrev').forEach(el => el.innerText = timeFora.sigla);
                 document.querySelectorAll('.score-away').forEach(el => el.innerText = away.score || "0");
+                document.querySelectorAll('.away-dot').forEach(el => {
+                    el.style.backgroundColor = timeFora.color;
+                    el.style.borderColor = timeFora.alternateColor;
+                });
 
                 const dateObj = new Date(game.date);
                 const dateText = `${dateObj.toLocaleDateString('pt-BR')} às ${dateObj.getHours().toString().padStart(2, '0')}:${dateObj.getMinutes().toString().padStart(2, '0')}`;
